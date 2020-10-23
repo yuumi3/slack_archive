@@ -1,0 +1,61 @@
+a {
+  text-decoration: none;
+  font-size: 0.95em;
+}
+hr {
+  border-top: solid 1px #ddd;
+}
+pre {
+  background-color: #f0f0f0;
+  padding: 8px;
+  margin: 0;
+}
+code {
+  background-color: #f0f0f0;
+}
+.channel-title {
+  border-top: solid 2px #000;
+  padding: 10px 0 0 20px;
+  font-size: 2em;
+}
+.message-icon {
+  display: inline-block;
+  width: 60px;
+  vertical-align: top;
+  padding: 5px 0 0 5px;
+}
+.message-icon img {
+  width: 38px;
+  border-radius: 5px;
+}
+.message-body {
+  display: inline-block;
+  width: calc(100% - 75px);
+}
+.message-user-name {
+  display: inline-block;
+  font-weight: 800;
+}
+.message-date {
+  display: inline-block;
+  margin-left: 30px;
+}
+.message-text {
+  margin: 0 0 16px 0;
+  font-size: 0.95em;
+}
+.uid {
+  display: inline-block;
+  color: #4b88b9;
+  margin-right: 5px;
+}
+.attachment-image {
+  width: 300px;
+  border: solid 1px #ccc;
+}
+.attachment-text {
+  width: 80%;
+  height: 300px;
+  overflow: scroll;
+  border: solid 1px #ccc;
+}
