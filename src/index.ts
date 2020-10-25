@@ -2,6 +2,8 @@
 
 import * as fs from 'fs'
 import * as request from 'request'
+import * as download from 'download'
+import { mainModule } from 'process'
 
 const emoji = require('node-emoji')
 
@@ -170,21 +172,19 @@ const downloadFile = (url: string, path: string) => {
   })
 }
 
-const downloadFiles = (outDir: string, users: UsersTypes, contents: ContentType[]) => {
-  Object.keys(users).forEach(uid => {
-    downloadFile(users[uid].iconUrl, outDir + "/" + users[uid].iconPath)
-  });
+const downloadFiles = async (outDir: string, users: UsersTypes, contents: ContentType[]) => {
+  await Promise.all(Object.keys(users).map((uid) =>
+    download(users[uid].iconUrl, outDir, {filename: users[uid].iconPath})))
 
-  contents.forEach(content => {
-    content.messages.forEach(message => {
-      if (message.attachment) {
-        downloadFile(message.attachment.url_private, outDir + "/" + message.attachment.name)
-      }
-    });
-  })
+  const attachments: AttachmentType[] = contents.reduce((atts, content) =>
+    atts.concat(content.messages.filter(message => message.attachment).map(m => m.attachment)),
+    [])
 
-  const css = fs.readFileSync("./src/index.css", "utf8")
-  fs.writeFileSync(outDir + "/index.css", css)
+  await Promise.all(attachments.map((attachment) =>
+    download(attachment.url_private, outDir, {filename: attachment.name})))
+
+  const css = await fs.promises.readFile("./src/index.css", "utf8")
+  await fs.promises.writeFile(outDir + "/index.css", css)
 }
 
 
@@ -209,27 +209,30 @@ const renderHtml = (outDir: string, contens: ContentType[]) => {
   fs.writeFileSync(outDir + "/index.html", html)
 }
 
-if (process.argv.length === 4) {
-  const slackExportDir = process.argv[2].replace(/^~/, process.env.HOME)
-  const outputDir = process.argv[3]
+const main = async () => {
+  if (process.argv.length === 4) {
+    const slackExportDir = process.argv[2].replace(/^~/, process.env.HOME)
+    const outputDir = process.argv[3]
 
-  if (!fs.existsSync(slackExportDir)) {
-    console.log(`${slackExportDir}: Not exist`)
-    process.exit(0)
+    if (!fs.existsSync(slackExportDir)) {
+      console.log(`${slackExportDir}: Not exist`)
+      process.exit(0)
+    }
+    if (fs.existsSync(outputDir)) {
+      console.log(`${outputDir}: Already exist`)
+      process.exit(0)
+    }
+    fs.mkdirSync(outputDir)
+
+    const users = getUsersJson(slackExportDir)
+    const channelNames= getChannelsJson(slackExportDir)
+    const conents = channelNames.map(name => getChanelContent(slackExportDir, name, users))
+
+    await downloadFiles(outputDir, users, conents)
+    renderHtml(outputDir, conents)
+  } else {
+    console.log("Usage: node index.js SLACK-EXPORTED-DIR OUTPUT-DIR")
   }
-  if (fs.existsSync(outputDir)) {
-    console.log(`${outputDir}: Already exist`)
-    process.exit(0)
-  }
-  fs.mkdirSync(outputDir)
-
-  const users = getUsersJson(slackExportDir)
-  const channelNames= getChannelsJson(slackExportDir)
-  const conents = channelNames.map(name => getChanelContent(slackExportDir, name, users))
-
-  downloadFiles(outputDir, users, conents)
-  renderHtml(outputDir, conents)
-} else {
-  console.log("Usage: node index.js SLACK-EXPORTED-DIR OUTPUT-DIR")
 }
 
+main()
