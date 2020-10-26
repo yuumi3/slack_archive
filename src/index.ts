@@ -180,8 +180,12 @@ const downloadFiles = async (outDir: string, users: UsersTypes, contents: Conten
     atts.concat(content.messages.filter(message => message.attachment).map(m => m.attachment)),
     [])
 
-  await Promise.all(attachments.map((attachment) =>
+  try {
+    await Promise.all(attachments.map((attachment) =>
     download(attachment.url_private, outDir, {filename: attachment.name})))
+  } catch (e) {
+    console.log(`-- Error ${e.statusMessage} : ${e.url}`)
+  }
 
   const css = await fs.promises.readFile("./src/index.css", "utf8")
   await fs.promises.writeFile(outDir + "/index.css", css)
