@@ -155,7 +155,7 @@ const makeChannelBodyHtml = (contents: ContentType[], outDir: string): string =>
       <span class="message-date">${date2string(m.date)}</span>
       <p class="message-text">${m.html}</p>
       ${ (m.attachment && m.attachment.mimetype.match(/image/)) ?
-        `<img src="${outDir + "/" + m.attachment.name}" class="attachment-image"/>` : "" }
+        `<img src="${"./" + m.attachment.name}" class="attachment-image"/>` : "" }
       ${ (m.attachment && m.attachment.mimetype.match(/text/)) ?
          `<pre class="attachment-text">${readTextFile(outDir + "/" + m.attachment.name)}</pre>` : "" }
     </div>`
